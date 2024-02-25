@@ -1,5 +1,5 @@
-Date: Feb 12th 2024 <br>
 Members: Sanjay,Aarya <br>
+Date: Feb 12th 2024 <br>
 Description: Created github repository <br>
 Date: Feb 16th 2024 <br>
 Description: We analyzed the code given by sir in the lab and created main,core and processor files <br>
