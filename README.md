@@ -24,7 +24,8 @@ We have used string map to store the PC value of given label and we use them to 
 We have used string map to store starting address of the strings and arrays to point at them when needed.Stored '\0' at the next byte after storing each char of string to identify end of the string. <br>
 We decided to split the memory to the two cores and for 1st core we decided to start memory from 1000th byte and for 2nd core we decided to start memory from 3000th byte for storing strings and array elements.<br>
 We have also written code to identify and split commas and ignore comments. <br>
-
+We designed our simulator such that it executes two programs p1.txt and p2.txt parallely <br>
+After executing two programs we have printed contents of registers of two cores and data in combined memory with address <br>
 
 
 
