@@ -1,8 +1,5 @@
 .data
 base: .word 19, 2, 4, 11, 1, 5, 20, 16, 12, 13, 8, 10, 7, 3, 6, 14, 9, 18, 17, 15 
-space: .string " "
-newline:  .string "\n"              #Selection Sort
-sort: .string "Selection sorted Array is: \n"
 .text
 start:
     li x1 0
@@ -33,24 +30,3 @@ start:
         addi x1, x1, 1
         addi x20, x20, 4
         bne x1, x19, loop
-la s1 base
-li s2 20
-li s3 0
-li a7 4
-la a0 sort
-ecall
-lp5:
-lw a0 0(s1)
-li a7 1
-ecall
-la a0 space
-li a7 4
-ecall
-addi s1 s1 4
-addi s3 s3 1
-blt s3 s2 lp5
-
-exitProg:
-li a7 4
-la a0 newline
-ecall

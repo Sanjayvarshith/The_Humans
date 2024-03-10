@@ -1,15 +1,19 @@
 #include <bits/stdc++.h>
+// #include 'pipe.hpp'
 using namespace std;
 
 class Core {
 public:
     array<int, 32> registers;
-    int pc;
+    int pc,instructions=0,cycles=0,stalls=0;
     bool active;
     bool check=true;
+    // pipe p;
     // int memStart=0;
     vector<string> program;
-    unordered_set <string> keyword ={ "add","ble","addi", "sub", "lw", "sw","mv", "jal", "jalr", "la", "li", "srl", "srli", "sra", "srai", "bne", "beq","bge", "blt","and","or","xor","andi","ori","xori","j","jr","sll","slli","ecall","ret"};
+    vector<int> v;
+    vector<vector<int>> vv;
+    unordered_set <string> keyword ={ "add","ble","addi", "sub", "lw", "sw","lb","sb","mv", "jal", "jalr", "la", "li", "srl", "srli", "sra", "srai", "bne", "beq","bge", "blt","and","or","xor","andi","ori","xori","j","jr","sll","slli","ecall","ret"};
     unordered_map<string,int> data;
     int loc;
     unordered_map<string,int> label;
@@ -38,6 +42,7 @@ public:
         if(parts[0]=="ret") 
         {
             program.push_back("jalr x0 x1 0");
+            v.push_back(0);
             return true;
         }
          if(parts[0]==".data") 
@@ -170,6 +175,7 @@ public:
             
             return false;
             }
+            return false;
         }
         if(parts[0][0]=='#') return false;
         if(isKeyword(parts[0]))
@@ -180,10 +186,14 @@ public:
                 s+=parts[i];
                 s+=" ";
             }
+            if(parts[0]=="mv") s="addi "+parts[1]+" "+parts[2]+" 0";
             program.push_back(s);
+            v.push_back(0);
             return true;
         }
         label[parts[0].substr(0,parts[0].size()-1)]=a;
+        // for(auto i: label) cout<<i.first<<" "<<i.second<<endl;
+        // cout<<"--------------------"<<endl;
         if(parts.size()>1)
         {
             string s="";
@@ -193,10 +203,16 @@ public:
                 s+=" ";
             }
             program.push_back(s);
+            v.push_back(0);
             return true;
         }
         return false;
     }
+
+    // void ex(vector<char>& memory)
+    // {
+    //     p.implement()
+    // }
 
 
     void execute(vector<char>& memory) {
@@ -495,10 +511,10 @@ public:
         if(pc>=program.size()*4) active=false;
     }
 
-private:
+public:
     vector<string> split(string str)
     {
-        vector<string> v;
+        vector<string> vs;
         string s="";
         for(int i=0;i<str.length();i++)
         {
@@ -506,14 +522,14 @@ private:
             if(str[i]==' ' || str[i]==',')
             {
                 if(s=="") continue;
-                v.push_back(s);
+                vs.push_back(s);
                 s="";
                 continue;
             }
             s+=str[i];
         }
-        if(s!="") v.push_back(s);
-        return v;
+        if(s!="") vs.push_back(s);
+        return vs;
     }
     bool isKeyword(string s)
     {

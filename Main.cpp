@@ -21,11 +21,51 @@ int main() {
     while(getline(fin2,line2))
     {
         if(sim.cores[1].add(line2,a,sim.memory)) a+=4;
-        // cout<<line<<endl;   
+        // cout<<line2<<endl;   
     }
     fin2.close();
     // cout<<1;
     sim.run();
+    cout<<"--------------------PIPELINE DIAGRAM------------------------"<<endl;
+    for(int i=0;i<2;i++)
+    {
+        cout<<"---------------------Core "<<i<<"----------------------"<<endl;
+        // for(int j=0;j<sim.cores[i].vv.size();j++)
+        // {
+        //     for(int k=0;k<sim.cores[i].vv[j].size();k++)
+        //     {
+        //         cout<<sim.cores[i].vv[j][k]<<" ";
+        //     }
+        //     cout<<endl;
+        // }
+        int n=sim.cores[i].vv.size();
+        int m=sim.cores[i].vv[0].size();
+        for(int j=0;j<m;j++)
+        {
+            cout<<sim.cores[i].program[j]<<endl;
+            for(int k=0;k<n;k++)
+            {
+                cout<<sim.cores[i].vv[k][j]<<" ";
+            }
+            cout<<endl;
+        }
+    }
+    // for(auto i: sim.cores[1].label) cout<<i.first<<" "<<i.second<<endl;
+        cout<<"--------------------------------------------------------"<<endl;
+        for(int i=0;i<2;i++)
+        {
+            cout<<"---------------------Core "<<i<<"----------------------"<<endl;
+            cout<<"Cycles: "<<sim.cores[i].cycles<<endl;
+            cout<<"Instructions: "<<sim.cores[i].instructions<<endl;
+            cout<<"Stalls: "<<sim.cores[i].stalls<<endl;
+            if(sim.cores[i].instructions==0 || sim.cores[i].cycles==0) {
+                cout<<"IPC: "<<endl;
+                cout<<"CPI: "<<endl;
+                continue;
+            }
+            cout<<"IPC: "<<(float)sim.cores[i].instructions/sim.cores[i].cycles<<endl;
+            cout<<"CPI: "<<(float)sim.cores[i].cycles/sim.cores[i].instructions<<endl;
+        }
  cout << "============ After Run ============" << endl;
 
     for (int i = 0; i < 2; i++) {
@@ -77,20 +117,6 @@ int main() {
         }
         cout<<"address: "<<start<<"   ||  value: " <<s<<endl;
         start+=4;
-    }
-    int end2=start;
-    cout << "===========Byte Memory===========" << endl;
-    start=1000;
-    while(start!=end1+4)
-    {
-        cout<<"address: "<<start<<"   ||  value: " <<(int)sim.memory[start]<<endl;
-        start++;
-    }
-    start=3000;
-    while(start!=end2+4)
-    {
-        cout<<"address: "<<start<<"   ||  value: " <<(int)sim.memory[start]<<endl;
-        start++;
     }
    
     
