@@ -4,7 +4,7 @@ using namespace std;
 class pipe
 {
     public:
-    bool stallIF,stallID,stallEXE,stallMEM,stallWB, prevMem, prevExe, prevID, prevIF;
+    bool stallIF,stallID,stallEXE,stallMEM,stallWB, prevMem, prevExe, prevID, prevIF,lat,lat2,lat3;
     int IFpc,IDpc,Exepc,Mempc,Wbpc;
     int predictBranch,nextpc;
     bool checkbranch,checkReg;
@@ -34,6 +34,9 @@ class pipe
         prevExe = false;
         prevID = false;
         prevIF = false;
+        lat=false;
+        lat2=false;
+        lat3=true;
         predictBranch = 0;
         checkbranch = false;
         checkReg = false;
@@ -50,6 +53,10 @@ class pipe
         for(int i=0;i<15;i++) pipeReg[i]=0;
     }
     public:
+    bool predict(int pc)
+    {
+        return false;
+    }
     void implement(Core & c,vector<char> &memory)
     {
         // cout<<"No";
@@ -200,7 +207,33 @@ class pipe
             // cout<<"Yes2";
             // cout<<"exe"<<IDpc<<endl;
             // c.instructions++;
-            pipeReg[5]=pipeReg[1];
+            // c.latency[pipeReg[1]].first++;
+            // cout<<"pipe1 "<<pipeReg[1]<<endl;
+            if(c.latency[pipeReg[5]].first==0) pipeReg[5]=pipeReg[1];
+            lat2=true;
+            // cout<<c.latency[pipeReg[5]].first<<" ";
+            if(c.latency[pipeReg[5]].first!=0)
+            {
+                c.latency[pipeReg[5]].first++;
+                if(lat) c.stalls++;
+                if(c.latency[pipeReg[5]].first==c.latency[pipeReg[5]].second)
+                {
+                    prevExe=true;
+                    prevID=lat;
+                    lat=false;
+                    stallEXE=stallID;
+                    lat2=false;
+                    c.vv[c.cycles][Exepc/4]=3;
+                    c.latency[pipeReg[5]].first=0;
+                    return;
+                }
+                prevExe=false;
+                prevID=true;
+                c.vv[c.cycles][Exepc/4]=3; 
+                return;
+            }
+            // cout<<pipeReg[5];
+            
             pipeReg[6]=pipeReg[2];
             if(pipeReg[5]<14)
             {
@@ -218,6 +251,7 @@ class pipe
                 {
                     checkbranch=true;
                     nextpc=pipeReg[4];
+                    c.wrongPredictions++;
                 }
             }
             else if(pipeReg[5]==28)
@@ -252,6 +286,20 @@ class pipe
             if(pipeReg[1]<22 || (pipeReg[1]>27 && pipeReg[1]!=30 && pipeReg[1]!=31 && pipeReg[1]!=33 && pipeReg[1]!=35))hazardReg[pipeReg[2]]=true;
             prevExe=true;
             prevID=false;
+            c.latency[pipeReg[5]].first++;
+            if(c.latency[pipeReg[5]].second==1)
+            {
+                // prevExe=true;
+                // prevID=lat;
+                lat=false;
+                c.latency[pipeReg[5]].first=0;
+                lat2=false;
+            }
+            else if(c.latency[pipeReg[5]].first==1)
+            {
+                prevExe=false;
+                prevID=true;
+            }
         }
         
         if(prevIF && !stallID)     //ID
@@ -309,6 +357,10 @@ class pipe
                     checkReg=true;
                 }
                 else checkReg=false;
+                if(predict(c.pc))
+                {
+                    //do nothing for now
+                }
             }
             else if(pipeReg[1]==28 || pipeReg[1]==30)
             {
@@ -407,6 +459,7 @@ class pipe
             // if(pipeReg[1]<22 || (pipeReg[1]>27 && pipeReg[1]!=30 && pipeReg[1]!=31 && pipeReg[1]!=33 && pipeReg[1]!=35))hazardReg[pipeReg[2]]=true;
             IDpc=pipeReg[0];
             c.vv[c.cycles][IDpc/4]=2;
+            lat=true;
             prevID=true;
             prevIF=false;
             // cout<<"ID"<<pipeReg[0]<<c.pc<<endl;
@@ -420,20 +473,21 @@ class pipe
             IFpc=c.pc;
             c.vv[c.cycles][IFpc/4]=1;
             prevIF=true;
+            lat3=false;
             c.pc+=4;
         }
         // cout<<"Yes1";
         // cout<<c.pc<<endl;
         if(checkReg)
         {
-            c.stalls++;
+            if(c.latency[pipeReg[5]].first!=0) c.stalls++;
             stallIF=true;
             stallID=true;
-            stallEXE=true;
+            if(!lat2) stallEXE=true;
         }
         else
         {
-            if(stallEXE)c.stalls++;
+            if(stallEXE) c.stalls++;
             stallIF=false;
             stallID=false;
             stallEXE=false;
@@ -443,13 +497,17 @@ class pipe
             c.pc=nextpc;
             checkbranch=false;
             prevIF=false;
+            lat3=true;
             prevID=false;
+            lat=false;
         }
-        if(!(prevIF || prevID || prevExe || prevMem) )
+        else lat3=false;
+        if(!(prevIF || prevID || prevExe || prevMem || lat3) )
         {
             c.active=false;
             // cout<<"Yes1";
         }
+        // cout<<prevID<<prevExe<<stallID<<stallEXE<<lat<<lat2<<endl;
         // cout<<c.pc<<endl;
         // cout<<c.cycles<<endl;
         // // for(auto i: c.label) cout<<i.first<<" "<<i.second<<" "<<endl;
@@ -460,8 +518,8 @@ class pipe
         // cout<<endl;
         // for(int i=0;i<32;i++) cout<<hazardReg[i]<<" ";
         // cout<<checkReg;
-        // cout<<endl<<"=========Word Memory=========="<<endl;
-    // int start=3000;
+    //     cout<<endl<<"=========Word Memory=========="<<endl;
+    // int start=1000;
     // while(memory[start]!=0)
     // {
     //     int s=0;

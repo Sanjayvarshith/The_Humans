@@ -11,9 +11,20 @@ public:
     // pipe p;
     // int memStart=0;
     vector<string> program;
+    int wrongPredictions=0;
     vector<int> v;
     vector<vector<int>> vv;
-    unordered_set <string> keyword ={ "add","ble","addi", "sub", "lw", "sw","lb","sb","mv", "jal", "jalr", "la", "li", "srl", "srli", "sra", "srai", "bne", "beq","bge", "blt","and","or","xor","andi","ori","xori","j","jr","sll","slli","ecall","ret"};
+    unordered_set <string> keyword ={ "add", "sub", "mul", "div", "rem",
+"sll", "srl", "sra", "slt", "sltu",
+"xor", "or", "and", "addi",
+"slli", "srli", "srai", "slti",
+"xori", "ori", "andi", "beq",
+"bne", "blt", "bgt", "ble", "bge",
+"jal", "jalr", "j", "jr", "lw",
+"sw", "lb", "sb", "la",
+"li", "ecall"
+};
+    unordered_map<int,pair<int,int>> latency; 
     unordered_map<string,int> data;
     int loc;
     unordered_map<string,int> label;
@@ -26,7 +37,17 @@ public:
 
     return decimalNumber;
     }
-
+    void setLatency()
+    {
+      
+        for(int x=1;x<=38;x++)
+        {
+            latency[x].first=0;
+            latency[x].second=1;
+            // cout<<latency[x].first<<" "<<latency[x].second<<endl;
+        }
+        
+    }
     bool add(string line,int a,vector<char>& memory)
     {
         if(line=="") return false;
@@ -125,6 +146,7 @@ public:
                     memory[loc]=t;
                     loc++;
                 }
+                return false;
             }
             
             }
@@ -147,7 +169,7 @@ public:
                 }
                 size_t colon = parts[0].find(":");
             }
-            
+            return false;
             }
             
             else{
@@ -175,7 +197,7 @@ public:
             
             return false;
             }
-            return false;
+        return false;
         }
         if(parts[0][0]=='#') return false;
         if(isKeyword(parts[0]))

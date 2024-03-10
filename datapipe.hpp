@@ -4,7 +4,7 @@ using namespace std;
 class datapipe
 {
     public:
-    bool stallIF,stallID,stallEXE,stallMEM,stallWB, prevMem, prevExe, prevID, prevIF;
+    bool stallIF,stallID,stallEXE,stallMEM,stallWB, prevMem, prevExe, prevID, prevIF,lat,lat2,lat3;
     int IFpc,IDpc,Exepc,Mempc,Wbpc;
     int predictBranch,nextpc;
     bool checkbranch,checkReg;
@@ -42,6 +42,9 @@ class datapipe
         Exepc=0;
         IDpc=0;
         IFpc=0;
+        lat=false;
+        lat2=false;
+        lat3=true;
         // pipeReg={};
         nextpc=0;
         for(int i=0;i<31;i++){
@@ -150,7 +153,7 @@ class datapipe
             // checkReg=false;
         }
         if(checkReg) c.stalls++;
-        if(prevExe )       //Mem
+        if(prevExe)       //Mem
         {
             // cout<<"Yes3";
             // cout<<"mem"<<Exepc<<endl;
@@ -254,12 +257,33 @@ class datapipe
             prevMem=true;                    
             prevExe=false;
         }
-        if(prevID && !checkReg)      //Exe
-        {
+        if(prevID && (!checkReg || c.latency[pipeReg[5]].first!=0))      //Exe
+        {   
+            // c.latency[]
             // cout<<"Yes2";
             // cout<<"exe"<<IDpc<<endl;
             // c.instructions++;
-            pipeReg[5]=pipeReg[1];
+            if(c.latency[pipeReg[5]].first==0) pipeReg[5]=pipeReg[1]; 
+            if(c.latency[pipeReg[5]].first!=0)
+            {
+                c.latency[pipeReg[5]].first++;
+                if(lat) c.stalls++;
+                if(c.latency[pipeReg[5]].first==c.latency[pipeReg[5]].second)
+                {
+                    prevExe=true;
+                    prevID=lat;
+                    lat=false;
+                    stallEXE=stallID;
+                    lat2=false;
+                    c.vv[c.cycles][Exepc/4]=3;
+                    c.latency[pipeReg[5]].first=0;
+                    return;
+                }
+                prevExe=false;
+                prevID=true;
+                c.vv[c.cycles][Exepc/4]=3; 
+                return;
+            }
             pipeReg[6]=pipeReg[2];
             if(pipeReg[5]<14)
             {
@@ -275,6 +299,7 @@ class datapipe
                 // cout<<branch<<endl;
                 if(branch)
                 {
+                    c.wrongPredictions++;
                     checkbranch=true;
                     nextpc=pipeReg[4];
                 }
@@ -311,6 +336,20 @@ class datapipe
             if(pipeReg[1]==32 || pipeReg[1]==34)hazardReg[pipeReg[2]]=true;
             prevExe=true;
             prevID=false;
+            c.latency[pipeReg[5]].first++;
+            if(c.latency[pipeReg[5]].second==1)
+            {
+                // prevExe=true;
+                // prevID=lat;
+                lat=false;
+                c.latency[pipeReg[5]].first=0;
+                lat2=false;
+            }
+            else if(c.latency[pipeReg[5]].first==1)
+            {
+                prevExe=false;
+                prevID=true;
+            }
         }
         
         if(prevIF && !checkReg)     //ID
@@ -470,6 +509,7 @@ class datapipe
             IDpc=pipeReg[0];
             c.vv[c.cycles][IDpc/4]=2;
             prevID=true;
+            lat=true;
             prevIF=false;
             // cout<<"ID"<<pipeReg[0]<<c.pc<<endl;
         }
@@ -483,6 +523,7 @@ class datapipe
             IFpc=c.pc;
             c.vv[c.cycles][IFpc/4]=1;
             prevIF=true;
+            lat3=false;
             c.pc+=4;
         }
         // cout<<"Yes1";
@@ -493,8 +534,11 @@ class datapipe
             checkbranch=false;
             prevIF=false;
             prevID=false;
+            lat3=true;
+            lat=false;
         }
-        if(!(prevIF || prevID || prevExe || prevMem) )
+        else lat3=false;
+        if(!(prevIF || prevID || prevExe || prevMem || lat3) )
         {
             c.active=false;
             // cout<<"Yes1";
