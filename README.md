@@ -1,4 +1,12 @@
 Members: Sanjay,Aarya <br>
+Date:April 10th 2024<br>
+Description: Succesfully added inputs to choose replacement policy and latency<br>
+Date:April 9th 2024<br>
+Description: Succesfully fixed bugs in pipe class(without data forwarding)<br>
+Date:April 8th 2024<br>
+Description: Succesfully completed lru and started implementing cache in pipe and datapipe class<br>
+Date:April 7th 2024<br>
+Description: Succesfully added cache simulator class and tried to write algorithm for lru<br>
 Date: March 10th 2024 <br>
 Description: Successfully completed implementation of phase 2 of this project (adding pipelining,enable/disable dataforwarding,hazard detection and latency) <br>
 Date: Feb 25th 2024 <br>
@@ -19,6 +27,11 @@ Date: Feb 12th 2024 <br>
 Description: Created github repository <br>
 
 Key Ideas: <br>
+Phase 3:<br>
+We made a struct set in which vector of blocks will be there<br>
+In struct set there is a int variable lru which specifies the position of a block in terms of how recently it was added<br>
+We specified address of every instruction as pc+300(core 1) or pc+1500(core 2), we kept some offset for instruction address so that it wont overlap with memory adrres location<br>
+For every instruction we will be checking whether the instruction is present in cache or not in IF stage , for every lw instruction also we will be checking whether the memory location is loaded in to cache or not in MEM stage <br> 
 Phase 2:<br>
 We have used 12 registers for implementation in pipeling for each different cycle <br>
 We have used a boolean array to detect hazards.It helps to check whether there is any register which has not gone to WB cycle but used in ID stage<br>
