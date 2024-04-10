@@ -1,11 +1,12 @@
 #include <bits/stdc++.h>
+#include "CacheSimulator.hpp"
 using namespace std;
 
 class datapipe
 {
     public:
-    bool stallIF,stallID,stallEXE,stallMEM,stallWB, prevMem, prevExe, prevID, prevIF,lat,lat2,lat3;
-    int IFpc,IDpc,Exepc,Mempc,Wbpc;
+    bool stallIF,stallID,stallEXE,stallMEM,stallWB, prevMem, prevExe, prevID, prevIF,lat,lat2,lat3,hit,miss,insHit,insMiss;
+    int IFpc,IDpc,Exepc,Mempc,Wbpc,curLat,cacLatency,insCurLat;
     int predictBranch,nextpc;
     bool checkbranch,checkReg;
     unordered_map<int,bool> hazardReg;
@@ -20,8 +21,8 @@ class datapipe
         {"xori", 19}, {"ori", 20}, {"andi", 21}, {"beq", 22},
         {"bne", 23}, {"blt", 24}, {"bgt", 25}, {"ble", 26}, {"bge", 27},
         {"jal", 28}, {"jalr", 29}, {"j", 30}, {"jr", 31}, {"lw", 32},
-        {"sw", 33}, {"lb", 34}, {"sb", 35}, {"la", 36},
-        {"li", 37}, {"ecall", 38}
+        {"sw", 33}, {"la", 34},
+        {"li", 35}, {"ecall", 36}
     };
     datapipe()
     {   
@@ -34,9 +35,16 @@ class datapipe
         prevExe = false;
         prevID = false;
         prevIF = false;
+        hit=false;
+        miss=false;
+        insCurLat=0;
+        insMiss=false;
+        insHit=false;
         predictBranch = 0;
         checkbranch = false;
         checkReg = false;
+        curLat=0;
+        cacLatency=4;
         Mempc=0;
         Wbpc=0;
         Exepc=0;
@@ -53,7 +61,7 @@ class datapipe
         for(int i=0;i<15;i++) pipeReg[i]=0;
     }
     public:
-    void implement(Core & c,vector<char> &memory)
+    void implement(Core & c,vector<char> &memory,CacheSimulator & cac)
     {
         // cout<<"No";
         c.registers[0]=0;
@@ -66,7 +74,7 @@ class datapipe
             c.instructions++;
             Wbpc=Mempc;
             c.vv[c.cycles][Wbpc/4]=5;
-            if(pipeReg[8]<22 || pipeReg[8]==32 || pipeReg[8]==34 || pipeReg[8]==36 || pipeReg[8]==37 || pipeReg[8]==28 || pipeReg[8]==29) c.registers[pipeReg[9]]=pipeReg[10];               
+            if(pipeReg[8]<22 || pipeReg[8]==32 || pipeReg[8]==34 || pipeReg[8]==35 || pipeReg[8]==28 || pipeReg[8]==29) c.registers[pipeReg[9]]=pipeReg[10];               
             prevMem=false;
             hazardReg[pipeReg[9]]=false;
             if(pipeReg[1]<14&& checkReg)
@@ -97,19 +105,19 @@ class datapipe
                 if(!hazardReg[tempReg[3]]) checkReg=false;
                 if(tempReg[3]==pipeReg[9]) pipeReg[3]=pipeReg[10];
             }
-            else if((pipeReg[1]==32 || pipeReg[1]==34) && checkReg)
+            else if((pipeReg[1]==32 ) && checkReg)
             {
                 if(!hazardReg[tempReg[4]]) checkReg=false;
                 if(tempReg[4]==pipeReg[9]) pipeReg[4]=pipeReg[10];
             }
-            else if(pipeReg[1]<36 && checkReg)
+            else if(pipeReg[1]<34 && checkReg)
             {
                 if(hazardReg[tempReg[3]]||hazardReg[tempReg[4]]) checkReg=true;
                 else checkReg=false;
                 if(tempReg[3]==pipeReg[9]) pipeReg[2]=pipeReg[10];
                 else if(tempReg[4]==pipeReg[9]) pipeReg[4]=pipeReg[10];
             }
-            else if(pipeReg[8]<22 || (pipeReg[8]>27 && pipeReg[8]!=30 && pipeReg[8]!=31 && pipeReg[8]!=33 && pipeReg[8]!=35)){
+            else if(pipeReg[8]<22 || (pipeReg[8]>27 && pipeReg[8]!=30 && pipeReg[8]!=31 && pipeReg[8]!=33 )){
             if(pipeReg[1]<14)
             {
                 if(tempReg[3]==pipeReg[9]) pipeReg[3]=pipeReg[10];
@@ -128,11 +136,11 @@ class datapipe
             {
                 if(tempReg[3]==pipeReg[9]) pipeReg[3]=pipeReg[10];
             }
-            else if((pipeReg[1]==32 || pipeReg[1]==34))
+            else if((pipeReg[1]==32 ))
             {
                 if(tempReg[4]==pipeReg[9]) pipeReg[4]=pipeReg[10];
             }
-            else if(pipeReg[1]<36)
+            else if(pipeReg[1]<34)
             {
                 if(tempReg[3]==pipeReg[9]) pipeReg[2]=pipeReg[10];
                 else if(tempReg[4]==pipeReg[9]) pipeReg[4]=pipeReg[10];
@@ -155,9 +163,26 @@ class datapipe
         if(checkReg) c.stalls++;
         if(prevExe)       //Mem
         {
+            // cout<<1;
             // cout<<"Yes3";
             // cout<<"mem"<<Exepc<<endl;
             // c.instructions++;
+            if(miss)
+            {
+                curLat++;
+                // cout<<curLat<<endl;
+                c.stalls++;
+                c.vv[c.cycles][Mempc/4]=4;
+                prevMem=false;
+                if(curLat>=cacLatency)
+                {
+                    prevMem=true;
+                    miss=false;
+                    curLat=0;
+                }
+            }
+            else {
+                // cout<<2;
             Mempc=Exepc;
             c.vv[c.cycles][Mempc/4]=4;
             pipeReg[8]=pipeReg[5];
@@ -167,6 +192,17 @@ class datapipe
             {   
                 int pos=pipeReg[7];
                 int s=0;
+                hit=cac.access(pos);
+                if(!hit)
+                {
+                    miss=true;
+                    curLat=1;
+                    if(cacLatency==1)
+                    {
+                        curLat=0;
+                        miss=false;
+                    }
+                }
                 for(int i=0;i<4;i++)
                 {
                     int d=memory[pos+i];
@@ -184,48 +220,26 @@ class datapipe
             }
             else if(pipeReg[5]==33)
             {
+                // cout<<3;
             // memory[pipeReg[10]]=c.registers[pipeReg[9]];
+            miss=false;
                 int s=pipeReg[6];
+                cac.access(pipeReg[7]);
                 for(int i=0;i<4;i++)
                 {
                     int t=0;
                     for(int j=0;j<8;j++)
                     {
-                        if((s>>(8*i+j)&1==1)) t+=pow(2,j);
+                        if((s>>(8*i+j)&1 ==1)) t+=pow(2,j);
                     }
                     memory[pipeReg[7]+i]=t;
                 }
             }
-            else if(pipeReg[5]==34)
-            {
-                int s=0;
-                int d=memory[pipeReg[7]];
-                for(int j=0;j<8;j++)
-                {
-                    if( j==7)
-                    {
-                        if(d>>7&1==1) s-=pow(2,7);
-                        continue;
-                    }
-                    if(d>>j&1==1) s+=pow(2,j);
-                }
-                pipeReg[10]=s;
-            }
-            else if(pipeReg[5]==35)
-            {
-                int s=pipeReg[6];
-                int t=0;
-                for(int j=0;j<8;j++)
-                {
-                    if((s>>(j)&1==1)) t+=pow(2,j);
-                }
-                memory[pipeReg[7]]=t;
-            }
-            else if(pipeReg[5]<=37)
+            else if(pipeReg[5]<=35)
             {
                 pipeReg[10]=pipeReg[7];
             }
-            if(pipeReg[8]<22 || (pipeReg[8]>27 && pipeReg[8]!=30 && pipeReg[8]!=31 && pipeReg[8]!=33 && pipeReg[8]!=35)){
+            if(pipeReg[8]<22 || (pipeReg[8]>27 && pipeReg[8]!=30 && pipeReg[8]!=31 && pipeReg[8]!=33)){
             if(pipeReg[1]<14)
             {
                 if(tempReg[3]==pipeReg[9]) pipeReg[3]=pipeReg[10];
@@ -244,11 +258,11 @@ class datapipe
             {
                 if(tempReg[3]==pipeReg[9]) pipeReg[3]=pipeReg[10];
             }
-            else if((pipeReg[1]==32 || pipeReg[1]==34))
+            else if((pipeReg[1]==32 ))
             {
                 if(tempReg[4]==pipeReg[9]) pipeReg[4]=pipeReg[10];
             }
-            else if(pipeReg[1]<36)
+            else if(pipeReg[1]<34)
             {
                 if(tempReg[3]==pipeReg[9]) pipeReg[2]=pipeReg[10];
                 else if(tempReg[4]==pipeReg[9]) pipeReg[4]=pipeReg[10];
@@ -256,6 +270,12 @@ class datapipe
             }
             prevMem=true;                    
             prevExe=false;
+            if(miss)
+            {
+                prevMem=false;
+                prevExe=true;
+            }
+            }
         }
         if(prevID && (!checkReg || c.latency[pipeReg[5]].first!=0))      //Exe
         {   
@@ -267,7 +287,7 @@ class datapipe
             if(c.latency[pipeReg[5]].first!=0)
             {
                 c.latency[pipeReg[5]].first++;
-                if(lat) c.stalls++;
+                if(lat && !miss) c.stalls++;
                 if(c.latency[pipeReg[5]].first==c.latency[pipeReg[5]].second)
                 {
                     prevExe=true;
@@ -277,10 +297,13 @@ class datapipe
                     lat2=false;
                     c.vv[c.cycles][Exepc/4]=3;
                     c.latency[pipeReg[5]].first=0;
+                    // if(!miss) prevExe=false;
                     return;
                 }
-                prevExe=false;
+                // prevExe=false;
                 prevID=true;
+                // if(!miss) prevExe=false;
+                // else prevExe=true;
                 c.vv[c.cycles][Exepc/4]=3; 
                 return;
             }
@@ -326,11 +349,11 @@ class datapipe
                 nextpc=pipeReg[3];
                 checkbranch=true;
             }
-            else if(pipeReg[5]>=32 && pipeReg[5]<=35)
+            else if(pipeReg[5]>=32 && pipeReg[5]<=33)
             {
                 pipeReg[7]=ALU(pipeReg[5],pipeReg[4],pipeReg[3]);
             }
-            else if(pipeReg[5]<=37) pipeReg[7]=pipeReg[3];
+            else if(pipeReg[5]<=35) pipeReg[7]=pipeReg[3];
             Exepc=IDpc;
             c.vv[c.cycles][Exepc/4]=3; 
             if(pipeReg[1]==32 || pipeReg[1]==34)hazardReg[pipeReg[2]]=true;
@@ -348,7 +371,8 @@ class datapipe
             else if(c.latency[pipeReg[5]].first==1)
             {
                 prevExe=false;
-                prevID=true;
+                if(miss) prevExe=true;
+                 prevID=false;
             }
         }
         
@@ -464,11 +488,11 @@ class datapipe
                     }
                 }
             }
-            else if(pipeReg[1]<36)
+            else if(pipeReg[1]<34)
             {   
                 
                 pipeReg[2]=c.regNum(parts[1]);
-                if(pipeReg[1]==33 || pipeReg[1]==35) pipeReg[2]=c.registers[c.regNum(parts[1])];
+                if(pipeReg[1]==33 ) pipeReg[2]=c.registers[c.regNum(parts[1])];
                 tempReg[3]=c.regNum(parts[1]);
                 tempReg[4]=-1;
                 int openParenthesisPos = parts[2].find("(");
@@ -485,20 +509,20 @@ class datapipe
                     tempReg[4]=c.regNum(parts[2].substr(openParenthesisPos + 1, closeParenthesisPos - openParenthesisPos - 1));
                     if(hazardReg[tempReg[4]]) checkReg=true;
                         else checkReg=false;
-                    if(pipeReg[1]==33 || pipeReg[1]==35)
+                    if(pipeReg[1]==33 )
                     {
                         if(hazardReg[tempReg[3]]) checkReg=true;
                         else checkReg=false;
                     }
                 }
             }
-            else if(pipeReg[1]==36)
+            else if(pipeReg[1]==34)
             {
                 pipeReg[2]=c.regNum(parts[1]);
                 pipeReg[3]=c.data[parts[2]];
                 pipeReg[4]=0;
             }
-            else if(pipeReg[1]==37)
+            else if(pipeReg[1]==35)
             {
                 pipeReg[2]=c.regNum(parts[1]);
                 pipeReg[3]=stoi(parts[2]);
@@ -509,22 +533,57 @@ class datapipe
             IDpc=pipeReg[0];
             c.vv[c.cycles][IDpc/4]=2;
             prevID=true;
+            // if(miss) prevID=false;
             lat=true;
             prevIF=false;
             // cout<<"ID"<<pipeReg[0]<<c.pc<<endl;
         }
         if(checkReg==false) stallIF=false;
-        if(c.pc<c.program.size()*4 && !stallIF) //IF
+        if((c.pc<c.program.size()*4 && !stallIF) || insMiss) //IF
         {   
             // cout<<"Yes1";
             // cout<<c.pc<<endl;
             // c.instructions++;
+           if(insMiss)
+            {
+                insCurLat++;
+                if(!miss) c.stalls++;
+                c.vv[c.cycles][IFpc/4]=1;
+                if(insCurLat==cacLatency)
+                {
+                    insMiss=false;
+                    insCurLat=0;
+                    prevIF=true;
+                    lat3=false;
+                }
+            }
+            else{
+            insHit=cac.access(c.pc+c.insLoc);
+            if(!insHit)
+            {
+                insMiss=true;
+                insCurLat=1;
+                if(cacLatency==1)
+                {
+                    insMiss=false;
+                    insCurLat=0;
+                    prevIF=true;
+                    lat3=false;
+                }
+            }
             pipeReg[0]=c.pc;
             IFpc=c.pc;
             c.vv[c.cycles][IFpc/4]=1;
             prevIF=true;
             lat3=false;
+            if(insMiss)
+            {
+                prevIF=false;
+                lat3=true;
+            }
             c.pc+=4;
+            } 
+            // if(miss) prevIF=false;
         }
         // cout<<"Yes1";
         // cout<<c.pc<<endl;
@@ -538,11 +597,12 @@ class datapipe
             lat=false;
         }
         else lat3=false;
-        if(!(prevIF || prevID || prevExe || prevMem || lat3) )
+        if(!(prevIF || prevID || prevExe || prevMem || lat3 || insMiss) )
         {
             c.active=false;
             // cout<<"Yes1";
         }
+        // cout<<prevIF<<prevID<<prevExe<<prevMem<<lat3<<insMiss<<endl;
         if(checkReg) stallIF=true;
         // cout<<c.pc<<endl;
     //     cout<<c.cycles<<endl;

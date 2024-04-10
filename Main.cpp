@@ -10,7 +10,9 @@ int main() {
     fin1.open("p1.txt");
     int a=0;
     sim.cores[0].loc=1000;
-    sim.cores[1].loc=3000;
+    sim.cores[1].loc=3500;
+    sim.cores[0].insLoc=300;
+    sim.cores[1].insLoc=2800;
     while(getline(fin1,line1))
     {
         if(sim.cores[0].add(line1,a,sim.memory)) a+=4;   
@@ -33,8 +35,8 @@ int main() {
         {"xori", 19}, {"ori", 20}, {"andi", 21}, {"beq", 22},
         {"bne", 23}, {"blt", 24}, {"bgt", 25}, {"ble", 26}, {"bge", 27},
         {"jal", 28}, {"jalr", 29}, {"j", 30}, {"jr", 31}, {"lw", 32},
-        {"sw", 33}, {"lb", 34}, {"sb", 35}, {"la", 36},
-        {"li", 37}, {"ecall", 38}
+        {"sw", 33},  {"la", 34},
+        {"li", 35}, {"ecall", 36}
     };
     sim.cores[0].setLatency();
     sim.cores[1].setLatency();
@@ -70,11 +72,34 @@ int main() {
         cin>>latencyChange;
     }
 
+    cout<<"Enter The size of cache: "<<endl;
+    int cacheSize;
+    cin>>cacheSize;
+    cout<<"Enter The size of block: "<<endl;
+    int blockSize;
+    cin>>blockSize;
+    cout<<"Enter The associativity of cache: "<<endl;
+    int associativity;
+    cin>>associativity;
+    cout<<"Enter 0 to enable LRU: "<<endl;
+    cout<<"OR Enter any number for Random policy: "<<endl;
+    int policy;
+    cin>>policy;
+    if(policy!=0) policy=1;
+    cout<<"Enter access time for Main memory: "<<endl;
+    int lat;
+    cin>>lat;
+    sim.p[0].cacLatency=lat;
+    sim.p[1].cacLatency=lat;
+    sim.dp[0].cacLatency=lat;
+    sim.dp[1].cacLatency=lat;
+    sim.cs.set(cacheSize,blockSize,associativity,policy);
+
     sim.run();
-    cout<<"--------------------PIPELINE DIAGRAM------------------------"<<endl;
-    for(int i=0;i<2;i++)
-    {
-        cout<<"---------------------Core "<<i<<"----------------------"<<endl;
+    // cout<<"--------------------PIPELINE DIAGRAM------------------------"<<endl;
+    // for(int i=0;i<2;i++)
+    // {
+        // cout<<"---------------------Core "<<i<<"----------------------"<<endl;
         // int n=sim.cores[i].vv.size();
         // int m=sim.cores[i].vv[0].size();
         // for(int j=0;j<m;j++)
@@ -86,7 +111,7 @@ int main() {
         //     }
         //     cout<<endl;
         // }
-    }
+    // }
     string str="";
     ofstream outdata;
     outdata.open("pipelineDiagram1.csv");
@@ -155,6 +180,13 @@ int main() {
             cout<<"IPC: "<<(float)sim.cores[i].instructions/sim.cores[i].cycles<<endl;
             cout<<"CPI: "<<(float)sim.cores[i].cycles/sim.cores[i].instructions<<endl;
         }
+        cout<<"==================Cache=================="<<endl;
+        cout<<"Cache Accesses: "<<sim.cs.hits+sim.cs.misses<<endl;
+        cout<<"Cache Hits: "<<sim.cs.hits<<endl;
+        cout<<"Cache Misses: "<<sim.cs.misses<<endl;
+        cout<<"Cache Hit Rate: "<<(float)sim.cs.hits/(sim.cs.hits+sim.cs.misses)<<endl;
+        cout<<"Cache Miss Rate: "<<(float)sim.cs.misses/(sim.cs.hits+sim.cs.misses)<<endl;
+        // cout<<"========================================"<<endl;
  cout << "============ After Run ============" << endl;
 
     for (int i = 0; i < 2; i++) {
@@ -167,7 +199,7 @@ int main() {
     int start;
     cout<<"=========Word Memory=========="<<endl;
     start=1000;
-    while(sim.memory[start]!=0)
+    while(sim.memory[start]!=0 || start<1050)
     {
         int s=0;
         for(int i=0;i<4;i++)
@@ -188,7 +220,7 @@ int main() {
     }
     cout<<"----------------------------------"<<endl;
     int end1=start;
-    start=3000;
+    start=3500;
     while(sim.memory[start]!=0)
     {
         int s=0;
@@ -208,7 +240,9 @@ int main() {
         cout<<"address: "<<start<<"   ||  value: " <<s<<endl;
         start+=4;
     }
-   
+    cout<<"----------------------------------"<<endl;
+    // cout<<sim.cs.hits<<" "<<sim.cs.misses<<endl;
+    // cout<<"Hit Rate: "<<(float)sim.cs.hits/(sim.cs.hits+sim.cs.misses)<<endl;
     
 
     return 0;

@@ -2,8 +2,12 @@
 // #include 'pipe.hpp'
 using namespace std;
 
+struct abcd{
+
+};
 class Core {
 public:
+abcd a;
     array<int, 32> registers;
     int pc,instructions=0,cycles=0,stalls=0;
     bool active;
@@ -26,7 +30,7 @@ public:
 };
     unordered_map<int,pair<int,int>> latency; 
     unordered_map<string,int> data;
-    int loc;
+    int loc,insLoc;
     unordered_map<string,int> label;
     Core() : pc(0), registers({}),active(true) {}
     int hexToDecimal(const string& hexString) {
