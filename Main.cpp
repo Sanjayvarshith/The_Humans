@@ -89,6 +89,7 @@ int main() {
     cout<<"Enter access time for Main memory: "<<endl;
     int lat;
     cin>>lat;
+    blockSize=16;
     sim.p[0].cacLatency=lat;
     sim.p[1].cacLatency=lat;
     sim.dp[0].cacLatency=lat;
@@ -199,7 +200,7 @@ int main() {
     int start;
     cout<<"=========Word Memory=========="<<endl;
     start=1000;
-    while(sim.memory[start]!=0 || start<1050)
+    while(sim.memory[start]!=0)
     {
         int s=0;
         for(int i=0;i<4;i++)
