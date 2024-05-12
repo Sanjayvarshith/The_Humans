@@ -1,4 +1,6 @@
 Members: Sanjay,Aarya <br>
+Date:May 11th 2024<br>
+DEscription:Designed a graphical frontend to display the register content,memeory content,cycles,program1,program2, cache content.<br>
 Date:April 10th 2024<br>
 Description: Succesfully added inputs to choose replacement policy and latency<br>
 Date:April 9th 2024<br>
