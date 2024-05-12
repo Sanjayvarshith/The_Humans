@@ -78,6 +78,7 @@ int main() {
     cout<<"Enter The size of block: "<<endl;
     int blockSize;
     cin>>blockSize;
+    blockSize=16;
     cout<<"Enter The associativity of cache: "<<endl;
     int associativity;
     cin>>associativity;
@@ -89,7 +90,6 @@ int main() {
     cout<<"Enter access time for Main memory: "<<endl;
     int lat;
     cin>>lat;
-    blockSize=16;
     sim.p[0].cacLatency=lat;
     sim.p[1].cacLatency=lat;
     sim.dp[0].cacLatency=lat;
@@ -97,21 +97,21 @@ int main() {
     sim.cs.set(cacheSize,blockSize,associativity,policy);
 
     sim.run();
-    // cout<<"--------------------PIPELINE DIAGRAM------------------------"<<endl;
+    cout<<"--------------------PIPELINE DIAGRAM------------------------"<<endl;
     // for(int i=0;i<2;i++)
     // {
-        // cout<<"---------------------Core "<<i<<"----------------------"<<endl;
-        // int n=sim.cores[i].vv.size();
-        // int m=sim.cores[i].vv[0].size();
-        // for(int j=0;j<m;j++)
-        // {
-        //     cout<<sim.cores[i].program[j]<<endl;
-        //     for(int k=0;k<n;k++)
-        //     {
-        //         cout<<sim.cores[i].vv[k][j]<<" ";
-        //     }
-        //     cout<<endl;
-        // }
+    //     cout<<"---------------------Core "<<i<<"----------------------"<<endl;
+    //     int n=sim.cores[i].vv.size();
+    //     int m=sim.cores[i].vv[0].size();
+    //     for(int j=0;j<m;j++)
+    //     {
+    //         cout<<sim.cores[i].program[j]<<endl;
+    //         for(int k=0;k<n;k++)
+    //         {
+    //             cout<<sim.cores[i].vv[k][j]<<" ";
+    //         }
+    //         cout<<endl;
+    //     }
     // }
     string str="";
     ofstream outdata;
@@ -163,44 +163,51 @@ int main() {
         }
         outdata2<<str;
         outdata2.close();
-
+std::ofstream outputFile3; 
+    outputFile3.open("static/output3.txt");
     // for(auto i: sim.cores[1].label) cout<<i.first<<" "<<i.second<<endl;
         cout<<"--------------------------------------------------------"<<endl;
         for(int i=0;i<2;i++)
         {
-            cout<<"---------------------Core "<<i<<"----------------------"<<endl;
-            cout<<"Cycles: "<<sim.cores[i].cycles<<endl;
-            cout<<"Instructions: "<<sim.cores[i].instructions<<endl;
-            cout<<"Stalls: "<<sim.cores[i].stalls<<endl;
-            cout<<"Wrong Predictions: "<<sim.cores[i].wrongPredictions<<endl;
+            outputFile3<<"---------------------Core "<<i<<"----------------------"<<endl;
+            outputFile3<<"Cycles: "<<sim.cores[i].cycles<<endl;
+            outputFile3<<"Instructions: "<<sim.cores[i].instructions<<endl;
+            outputFile3<<"Stalls: "<<sim.cores[i].stalls<<endl;
+            outputFile3<<"Wrong Predictions: "<<sim.cores[i].wrongPredictions<<endl;
             if(sim.cores[i].instructions==0 || sim.cores[i].cycles==0) {
-                cout<<"IPC: "<<endl;
-                cout<<"CPI: "<<endl;
+                outputFile3<<"IPC: "<<endl;
+                outputFile3<<"CPI: "<<endl;
                 continue;
             }
-            cout<<"IPC: "<<(float)sim.cores[i].instructions/sim.cores[i].cycles<<endl;
-            cout<<"CPI: "<<(float)sim.cores[i].cycles/sim.cores[i].instructions<<endl;
+            outputFile3<<"IPC: "<<(float)sim.cores[i].instructions/sim.cores[i].cycles<<endl;
+           outputFile3<<"CPI: "<<(float)sim.cores[i].cycles/sim.cores[i].instructions<<endl;
         }
-        cout<<"==================Cache=================="<<endl;
-        cout<<"Cache Accesses: "<<sim.cs.hits+sim.cs.misses<<endl;
-        cout<<"Cache Hits: "<<sim.cs.hits<<endl;
-        cout<<"Cache Misses: "<<sim.cs.misses<<endl;
-        cout<<"Cache Hit Rate: "<<(float)sim.cs.hits/(sim.cs.hits+sim.cs.misses)<<endl;
-        cout<<"Cache Miss Rate: "<<(float)sim.cs.misses/(sim.cs.hits+sim.cs.misses)<<endl;
+        std::ofstream outputFile4; 
+    outputFile4.open("static/output4.txt");
+        outputFile4<<"==================Cache=================="<<endl;
+         outputFile4<<"Cache Accesses: "<<sim.cs.hits+sim.cs.misses<<endl;
+        outputFile4<<"Cache Hits: "<<sim.cs.hits<<endl;
+         outputFile4<<"Cache Misses: "<<sim.cs.misses<<endl;
+         outputFile4<<"Cache Hit Rate: "<<(float)sim.cs.hits/(sim.cs.hits+sim.cs.misses)<<endl;
+        outputFile4<<"Cache Miss Rate: "<<(float)sim.cs.misses/(sim.cs.hits+sim.cs.misses)<<endl;
         // cout<<"========================================"<<endl;
  cout << "============ After Run ============" << endl;
-
+std::ofstream outputFile2; 
+    outputFile2.open("static/output2.txt");
     for (int i = 0; i < 2; i++) {
-        cout << "Core " << i << " Registers: ";
+        outputFile2 << "Core " << i <<endl;
+        
         for (int j = 0; j < 32; j++) {
-            cout << sim.cores[i].registers[j] << " ";
+            outputFile2 << "x"<<j<<"    : "<<sim.cores[i].registers[j] << " "<<endl;
         }
-        cout << endl;
+        outputFile2 << endl;
     }
     int start;
-    cout<<"=========Word Memory=========="<<endl;
+     std::ofstream outputFile1; 
+    outputFile1.open("static/output1.txt");
+    outputFile1<<"=========Word Memory==========\n";
     start=1000;
-    while(sim.memory[start]!=0)
+    while(sim.memory[start]!=0 || start<1050)
     {
         int s=0;
         for(int i=0;i<4;i++)
@@ -216,10 +223,10 @@ int main() {
                 if(c>>j&1==1) s+=pow(2,8*i+j);
             }
         }
-        cout<<"address: "<<start<<"   ||  value: " <<s<<endl;
+        outputFile1<<"address: "<<start<<"   ||  value: " <<s<<endl;
         start+=4;
     }
-    cout<<"----------------------------------"<<endl;
+    outputFile1<<"----------------------------------"<<endl;
     int end1=start;
     start=3500;
     while(sim.memory[start]!=0)
@@ -238,10 +245,10 @@ int main() {
                 if(c>>j&1==1) s+=pow(2,8*i+j);
             }
         }
-        cout<<"address: "<<start<<"   ||  value: " <<s<<endl;
+        outputFile1<<"address: "<<start<<"   ||  value: " <<s<<endl;
         start+=4;
     }
-    cout<<"----------------------------------"<<endl;
+    outputFile1<<"----------------------------------"<<endl;
     // cout<<sim.cs.hits<<" "<<sim.cs.misses<<endl;
     // cout<<"Hit Rate: "<<(float)sim.cs.hits/(sim.cs.hits+sim.cs.misses)<<endl;
     

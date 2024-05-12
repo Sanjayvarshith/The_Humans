@@ -77,6 +77,10 @@ class pipe
             c.instructions++;
             Wbpc=Mempc;
             c.vv[c.cycles][Wbpc/4]=5;
+            if(pipeReg[8]==32)
+            {
+                 cout<<pipeReg[9]<<" "<<pipeReg[10]<<" "<<c.pc-16<<endl;
+            }
             if(pipeReg[8]<22 || pipeReg[8]==32 || pipeReg[8]==34 || pipeReg[8]==35 || pipeReg[8]==28 || pipeReg[8]==29) c.registers[pipeReg[9]]=pipeReg[10];               
             prevMem=false;
             hazardReg[pipeReg[9]]=false;
@@ -216,6 +220,8 @@ class pipe
                 prevExe=true;
             }
             }
+            
+           
         }
         if(prevID && !stallEXE)      //Exe
         {
