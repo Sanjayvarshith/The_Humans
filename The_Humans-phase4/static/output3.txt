@@ -1,0 +1,14 @@
+---------------------Core 0----------------------
+Cycles: 4549
+Instructions: 2811
+Stalls: 380
+Wrong Predictions: 303
+IPC: 0.617938
+CPI: 1.61829
+---------------------Core 1----------------------
+Cycles: 2511
+Instructions: 1857
+Stalls: 208
+Wrong Predictions: 37
+IPC: 0.739546
+CPI: 1.35218

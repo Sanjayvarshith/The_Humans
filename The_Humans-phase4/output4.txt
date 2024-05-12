@@ -1,0 +1,6 @@
+==================Cache==================
+Cache Accesses: 0
+Cache Hits: 0
+Cache Misses: 0
+Cache Hit Rate: nan
+Cache Miss Rate: nan

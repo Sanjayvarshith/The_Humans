@@ -1,0 +1,66 @@
+---------------------Core 0----------------------
+Cycles: 4337
+Instructions: 2673
+Stalls: 399
+Wrong Predictions: 283
+IPC: 0.616325
+CPI: 1.62252
+---------------------Core 1----------------------
+Cycles: 2533
+Instructions: 1857
+Stalls: 242
+Wrong Predictions: 37
+IPC: 0.733123
+CPI: 1.36403
+==================Cache==================
+Cache Accesses: 7832
+Cache Hits: 7807
+Cache Misses: 25
+Cache Hit Rate: 0.996808
+Cache Miss Rate: 0.00319203
+============ After Run ============
+Core 0 Registers: 0 0 0 0 0 0 0 0 0 1000 19 20 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 19 0 19 0
+Core 1 Registers: 0 19 20 18 0 20 19 0 0 0 0 0 0 0 0 3580 3572 3500 20 19 3576 3500 0 0 0 0 0 0 0 0 0 0
+=========Word Memory==========
+address: 1000   ||  value: 1
+address: 1004   ||  value: 2
+address: 1008   ||  value: 3
+address: 1012   ||  value: 4
+address: 1016   ||  value: 5
+address: 1020   ||  value: 6
+address: 1024   ||  value: 7
+address: 1028   ||  value: 8
+address: 1032   ||  value: 9
+address: 1036   ||  value: 10
+address: 1040   ||  value: 11
+address: 1044   ||  value: 12
+address: 1048   ||  value: 13
+address: 1052   ||  value: 14
+address: 1056   ||  value: 15
+address: 1060   ||  value: 16
+address: 1064   ||  value: 17
+address: 1068   ||  value: 18
+address: 1072   ||  value: 19
+address: 1076   ||  value: 20
+----------------------------------
+address: 3500   ||  value: 1
+address: 3504   ||  value: 2
+address: 3508   ||  value: 3
+address: 3512   ||  value: 4
+address: 3516   ||  value: 5
+address: 3520   ||  value: 6
+address: 3524   ||  value: 7
+address: 3528   ||  value: 8
+address: 3532   ||  value: 9
+address: 3536   ||  value: 10
+address: 3540   ||  value: 11
+address: 3544   ||  value: 12
+address: 3548   ||  value: 13
+address: 3552   ||  value: 14
+address: 3556   ||  value: 15
+address: 3560   ||  value: 16
+address: 3564   ||  value: 17
+address: 3568   ||  value: 18
+address: 3572   ||  value: 19
+address: 3576   ||  value: 20
+----------------------------------

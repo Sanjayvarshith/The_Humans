@@ -1,0 +1,31 @@
+.data 
+arrayBase: .word 19, 2, 4, 11, 1, 5, 20, 16, 12, 13, 8, 10, 7, 3, 6, 14, 9, 18, 17, 15 
+.text 
+la s1, arrayBase 
+addi t4, x0, 0 # initialize i=0 
+addi t5, x0, 19 # initialize 20 
+addi t4, t4, 1 
+SortArray: 
+addi t4, x0, 0 # initialize i 
+OuterLoop: 
+beq t4, t5, EndSort 
+la s1, arrayBase 
+addi t3, x0, 0 # initialize j 
+InnerLoop: 
+beq t3, t5, exitInnerLoop 
+lw a0, 0(s1) 
+lw a1, 4(s1) 
+ble a0, a1, updateValues 
+sw a0, 4(s1) 
+sw a1, 0(s1) 
+updateValues: 
+addi t3, t3, 1 
+addi s1, s1, 4 
+j InnerLoop 
+exitInnerLoop: 
+addi t4, t4, 1 
+j OuterLoop
+EndSort: 
+la s1, arrayBase 
+addi t4, x0, 0 # initialize i=0 
+addi t5, x0, 19 # initialize 20

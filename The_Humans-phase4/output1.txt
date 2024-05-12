@@ -1,0 +1,16 @@
+=========Word Memory==========
+address: 1000   ||  value: 0
+address: 1004   ||  value: 0
+address: 1008   ||  value: 0
+address: 1012   ||  value: 0
+address: 1016   ||  value: 0
+address: 1020   ||  value: 0
+address: 1024   ||  value: 0
+address: 1028   ||  value: 0
+address: 1032   ||  value: 0
+address: 1036   ||  value: 0
+address: 1040   ||  value: 0
+address: 1044   ||  value: 0
+address: 1048   ||  value: 0
+----------------------------------
+----------------------------------

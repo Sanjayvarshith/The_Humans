@@ -1,0 +1,14 @@
+---------------------Core 0----------------------
+Cycles: 1
+Instructions: 0
+Stalls: 0
+Wrong Predictions: 0
+IPC: 
+CPI: 
+---------------------Core 1----------------------
+Cycles: 1
+Instructions: 0
+Stalls: 0
+Wrong Predictions: 0
+IPC: 
+CPI: 

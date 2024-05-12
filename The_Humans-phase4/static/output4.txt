@@ -1,0 +1,6 @@
+==================Cache==================
+Cache Accesses: 8089
+Cache Hits: 8064
+Cache Misses: 25
+Cache Hit Rate: 0.996909
+Cache Miss Rate: 0.00309062
